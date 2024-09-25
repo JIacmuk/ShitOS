@@ -1,0 +1,12 @@
+﻿@using Pages.NotFound
+@using Widgets.Layouts
+
+<Router AppAssembly="@typeof(ApplicationRouting).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <NotFoundPage/>
+    </NotFound>
+</Router>
