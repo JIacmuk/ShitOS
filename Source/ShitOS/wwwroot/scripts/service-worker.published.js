@@ -38,6 +38,8 @@ async function onActivate(event) {
 }
 
 async function onFetch(event) {
+    console.log("Service worker: Fetch");
+    
     let cachedResponse = null;
     if (event.request.method === 'GET') {
         // For all navigation requests, try to serve index.html from cache,

@@ -1,0 +1,33 @@
+@using ShitOS.Core
+@using ShitOS.Shared.Ui
+@page "/os"
+
+<CenteringWrapper>
+    
+</CenteringWrapper>
+
+@code
+{
+    public OsProcessor? Processor { get; private set; }
+    public OsTaskManager? TaskManager { get; private set; }
+
+    protected override void OnInitialized()
+    {
+        OsTaskManagerOptions taskManagerOptions = new(
+            10000,
+            OsTaskFactory.Shared
+        );
+
+        TaskManager = new OsTaskManager(taskManagerOptions);
+
+        OsProcessorOptions processorOptions = new(
+            TaskManager,
+            1000
+        );
+        Processor = new OsProcessor(
+            processorOptions
+        );
+
+        base.OnInitialized();
+    }
+}

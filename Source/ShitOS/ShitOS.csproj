@@ -13,11 +13,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
+    <ServiceWorker Include="wwwroot\scripts\service-worker.js">
+      <PublishedContent>wwwroot\scripts\service-worker.published.js</PublishedContent>
+    </ServiceWorker>
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Shared\" />
+    <_ContentIncludedByDefault Remove="Pages\Counter\CounterPage.razor" />
+    <_ContentIncludedByDefault Remove="Pages\Home\HomePage.razor" />
+    <_ContentIncludedByDefault Remove="Pages\Weather\WeatherPage.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ShitOS.Core\ShitOS.Core.csproj" />
   </ItemGroup>
 
 </Project>

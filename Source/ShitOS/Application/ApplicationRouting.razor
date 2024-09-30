@@ -1,12 +1,14 @@
-﻿@using Pages.NotFound
-@using Widgets.Layouts
+﻿@using ShitOS.Pages.NotFound
+@using ShitOS.Widgets.Layouts
+
 
 <Router AppAssembly="@typeof(ApplicationRouting).Assembly">
     <Found Context="routeData">
         <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
     </Found>
     <NotFound>
-        <NotFoundPage/>
+        <LayoutView Layout="@typeof(MainLayout)">
+            <NotFoundPage/>
+        </LayoutView>
     </NotFound>
 </Router>
