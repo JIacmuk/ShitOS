@@ -1,4 +1,6 @@
-namespace ShitOS.Core;
+using ShitOS.Core.Command;
+
+namespace ShitOS.Core.Task;
 
 public class OsTaskFactory(
     OsCommandsFactory commandsFactory
@@ -28,7 +30,7 @@ public class OsTaskFactory(
         
         return new OsTask(
             commands,
-            OsTaskStates.Waiting,
+            OsTaskState.Waiting,
             Random.Shared.Next(0, MaxPriority)
         );
     }

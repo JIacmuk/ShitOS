@@ -1,6 +1,4 @@
-using System.Runtime.InteropServices;
-
-namespace ShitOS.Core;
+namespace ShitOS.Core.Command;
 
 public class OsCommandsFactory
 {

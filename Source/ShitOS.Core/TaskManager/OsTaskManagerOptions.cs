@@ -1,4 +1,6 @@
-namespace ShitOS.Core;
+using ShitOS.Core.Task;
+
+namespace ShitOS.Core.TaskManager;
 
 public record OsTaskManagerOptions(
     int MemorySize,

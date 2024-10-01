@@ -1,9 +1,13 @@
 @using ShitOS.Core
+@using ShitOS.Core.Pocessor
+@using ShitOS.Core.Task
+@using ShitOS.Core.TaskManager
 @using ShitOS.Shared.Ui
+@using ShitOS.Widgets.TasksTable
 @page "/os"
 
 <CenteringWrapper>
-    
+    <TasksTableWidget/>
 </CenteringWrapper>
 
 @code
@@ -14,7 +18,7 @@
     protected override void OnInitialized()
     {
         OsTaskManagerOptions taskManagerOptions = new(
-            10000,
+            10_000,
             OsTaskFactory.Shared
         );
 
@@ -22,7 +26,7 @@
 
         OsProcessorOptions processorOptions = new(
             TaskManager,
-            1000
+            1_000
         );
         Processor = new OsProcessor(
             processorOptions

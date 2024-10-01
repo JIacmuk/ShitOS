@@ -1,4 +1,4 @@
-namespace ShitOS.Core;
+namespace ShitOS.Core.Pocessor;
 
 /// <summary>
 /// Определяет скорость работы программы 

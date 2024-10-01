@@ -1,4 +1,4 @@
-namespace ShitOS.Core;
+namespace ShitOS.Core.Command;
 
 public class OsCommandOptions(
     OsCommandType commandType,

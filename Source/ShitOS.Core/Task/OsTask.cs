@@ -1,12 +1,14 @@
-namespace ShitOS.Core;
+using ShitOS.Core.Command;
+
+namespace ShitOS.Core.Task;
 
 public class OsTask(
     OsCommand[] commands,
-    OsTaskStates state,
+    OsTaskState state,
     int priority
 ) {
     public OsCommand[] Commands { get; } = commands;
-    public OsTaskStates State { get; } = state;
+    public OsTaskState State { get; } = state;
     public int Priority { get; } = priority;
 
     private int _lastComandIndex = 0;
