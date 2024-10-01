@@ -13,7 +13,7 @@
 @code
 {
     public OsProcessor? Processor { get; private set; }
-    public OsTaskManager? TaskManager { get; private set; }
+    public RelativePriorityOsTaskManager? TaskManager { get; private set; }
 
     protected override void OnInitialized()
     {
@@ -22,7 +22,7 @@
             OsTaskFactory.Shared
         );
 
-        TaskManager = new OsTaskManager(taskManagerOptions);
+        TaskManager = new RelativePriorityOsTaskManager(taskManagerOptions);
 
         OsProcessorOptions processorOptions = new(
             TaskManager,
