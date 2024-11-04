@@ -1,3 +1,5 @@
+using ShitOS.Core.TaskManager;
+
 namespace ShitOS.Core.Pocessor;
 
 /// <summary>
@@ -16,11 +18,13 @@ public class OsProcessor
         _accumulatedTics = 0;
         _options = options;
     }
-
+    
+    public IOsTaskManager TaskManager => _options.TaskManager;
+    
     public void Proceess()
     {  
         DateTimeOffset now = DateTimeOffset.Now;
-        _accumulatedTics += ( _lastTicDate - now ).TotalSeconds * _options.TicsPerSecond;
+        _accumulatedTics += ( now - _lastTicDate ).TotalSeconds * _options.TicsPerSecond;
         _lastTicDate = now;
 
         int executableTics = Convert.ToInt32(_accumulatedTics);
@@ -29,7 +33,5 @@ public class OsProcessor
             _accumulatedTics -= executableTics;
             _options.TaskManager.Process(executableTics);
         }
-        
-        
     }
 }

@@ -22,6 +22,7 @@
     <_ContentIncludedByDefault Remove="Pages\Counter\CounterPage.razor" />
     <_ContentIncludedByDefault Remove="Pages\Home\HomePage.razor" />
     <_ContentIncludedByDefault Remove="Pages\Weather\WeatherPage.razor" />
+    <_ContentIncludedByDefault Remove="Widgets\NavMenu\NavMenuWidget.razor" />
   </ItemGroup>
 
   <ItemGroup>

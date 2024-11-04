@@ -2,8 +2,9 @@ namespace ShitOS.Core.Task;
 
 public enum OsTaskState
 {
-    InProcess,  // В процессе выполнения
-    Waiting,    // Ожидает выполнения
-    Paused,     // Приостановлена
-    Completed,  // Выполена
+    InProcess    = 0b00001, // В процессе выполнения
+    Interrupted  = 0b00010, // Прервана, выполняется на IO
+    Waiting      = 0b00100, // Ожидает выполнения
+    Paused       = 0b01000, // Приостановлена
+    Completed    = 0b10000, // Выполена
 }

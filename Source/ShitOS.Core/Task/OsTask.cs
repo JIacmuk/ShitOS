@@ -1,50 +1,85 @@
+using System.Diagnostics;
 using ShitOS.Core.Command;
 
 namespace ShitOS.Core.Task;
 
-public class OsTask(
-    OsCommand[] commands,
-    OsTaskState state,
-    int priority
-) {
-    public OsCommand[] Commands { get; } = commands;
-    public OsTaskState State { get; } = state;
-    public int Priority { get; } = priority;
+public class OsTask
+{
+    private int _executionIndex;
 
-    private int _lastComandIndex = 0;
-
-
-    private OsCommand? SelectExecutableCommandOrDefault()
+    public OsTask(List<OsCommand> commands, OsTaskState state, int priority)
     {
-        if (commands.Length == 0)
-            return null;
-        
-        OsCommand? selectedCommand = commands[_lastComandIndex];
-        if (selectedCommand.IsComplited)
-        {
-            _lastComandIndex++;
-            selectedCommand = commands[_lastComandIndex];
-        }
-
-        return selectedCommand;
-        
+        Commands = commands;
+        _executionIndex = 0;
+        State = state;
+        Priority = priority;
     }
-    
-    /// <param name="tics">Количество доступных тиков</param>
-    /// <returns>Количество затраченных тиков</returns>
-    public int Process(int tics)
+
+    public IReadOnlyCollection<OsCommand> Commands { get; }
+    public OsTaskState State { get; set; }
+    public int Priority { get; }
+
+    /// <param name="tics"></param>
+    /// <returns>Оставшееся количество тиков, после выцполнения</returns>
+    public OsTaskProcessResult Process(int tics)
     {
-        int spentTics = 0;
+        if (_executionIndex > Commands.Count)
+            return new OsTaskProcessResult(tics, false);
         
-        while (tics > spentTics)
+        OsCommand currentCommand = Commands.ElementAt(_executionIndex);
+        
+        //В моменте задумался сам, а должна ли вообще быть ситуация,
+        //когда одна таска вызывает процесс по несколько раз
+        //ведь по изначальной идее либо тиков не хватит, либо таска закончится
+        while (tics > 0)
         {
-            OsCommand? command = SelectExecutableCommandOrDefault();
-            if (command == null)
-                break;
+            tics = currentCommand.Process(tics);
+
+            if (!currentCommand.IsComplited)
+                continue;
             
-            spentTics += command.Process(tics);
-        }
+            _executionIndex++;
 
-        return spentTics;
+            if (_executionIndex >= Commands.Count)
+            {
+                State = OsTaskState.Completed;
+                return new OsTaskProcessResult(tics, true);
+            }
+            
+            OsCommand nextCommand = Commands.ElementAt(_executionIndex);
+            // Если мы ушли в прерывание или вышли из него,
+            // то больше не можем расходовать время этого процессора
+            if (nextCommand.Type != currentCommand.Type)
+            {
+                State = SelectNewState(State, currentCommand, nextCommand);
+                return new OsTaskProcessResult(tics, true);
+            }
+            
+            currentCommand = nextCommand;
+        }
+        
+        return new OsTaskProcessResult(tics, false);
     }
+
+
+    private static OsTaskState SelectNewState(
+        OsTaskState previousState,
+        OsCommand previousCommand,
+        OsCommand nextCommand
+    ){
+        if (previousState is not (OsTaskState.Interrupted or OsTaskState.InProcess))
+            return previousState;
+        
+        if (nextCommand.Type == OsCommandType.IO)
+            return OsTaskState.Interrupted;
+
+        if (previousState == OsTaskState.InProcess && nextCommand.Type == OsCommandType.Executable)
+            return OsTaskState.InProcess;
+        
+        if (previousState == OsTaskState.Interrupted && nextCommand.Type == OsCommandType.Executable)
+            return OsTaskState.Waiting;
+        
+        return previousState;
+    }
+
 }

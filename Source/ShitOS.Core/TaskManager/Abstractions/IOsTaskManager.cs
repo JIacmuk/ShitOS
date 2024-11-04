@@ -8,18 +8,22 @@ namespace ShitOS.Core.TaskManager;
 public interface IOsTaskManager
 {
     /// <summary>
-    /// Вызывается при зваершении задачи
+    /// Вызывается при изменении состояния таски
+    /// Получает таску и предыдущее состояние
     /// </summary>
-    event Action<OsTask>? OnTaskCompleted;
+    event Action<OsTask, OsTaskState>? TaskStateChanged;
+    
     /// <summary>
     /// Вызывается при добавлении новой задачи
     /// </summary>
-    event Action<OsTask>? OnTaskAdded;
+    event Action<OsTask>? TaskAdded;
     
     /// <summary>
-    /// Список всех задачь
+    /// Вызывается по завершению таски
     /// </summary>
-    IReadOnlyCollection<OsTask> Tasks { get; }
+    public event Action<OsTask>? TaskCompleted;
+    
+    public IEnumerable<OsTask> Tasks { get; }
     
     /// <summary>
     /// Добавление новой задачи
@@ -28,6 +32,7 @@ public interface IOsTaskManager
     
     /// <summary>
     /// Эмуляция указанного количества тиков
+    /// Я бы считал что один вызов Proccess съедает все тики
     /// </summary>
     /// <param name="tics"> Количество тиков </param>
     void Process(int tics);

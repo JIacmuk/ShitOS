@@ -1,14 +1,8 @@
+@inherits UiContainerComponent
+
 <div 
-    @attributes="AdditionalAttributes" 
-    class="centering-wrapper">
+    @attributes="@InputAttributes" 
+    class="@CombineClasses("centering-wrapper")">
     
     @ChildContent
 </div>
-
-@code {
-    [Parameter(CaptureUnmatchedValues = true)]
-    public IDictionary<string, object>? AdditionalAttributes { get; set; }
-    
-    [Parameter]
-    public RenderFragment? ChildContent { get; init; }
-}

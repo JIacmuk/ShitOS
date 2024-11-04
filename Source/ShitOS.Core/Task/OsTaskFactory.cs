@@ -1,37 +1,45 @@
+using System.Runtime.InteropServices;
 using ShitOS.Core.Command;
 
 namespace ShitOS.Core.Task;
 
 public class OsTaskFactory(
-    OsCommandsFactory commandsFactory
-) {
-    public int MaxPriority { get; set; } = 100;
-    
+    OsTaskFactoryOptions options
+)
+{
     public static OsTaskFactory Shared { get; } = new OsTaskFactory(
-        OsCommandsFactory.Shared
+        new OsTaskFactoryOptions(1000, OsCommandsFactory.Shared)
     );
-    
-    public OsTask CreateTasks(int count)
+
+    public OsTask CreateTask(int commandsCount)
     {
-        int ioCommandsCount = Random.Shared.Next(0, count);
-        OsCommand[] commands = new OsCommand[count];
+        return CreateTask(
+            commandsCount,
+            Random.Shared.Next(0, commandsCount)
+        );
+    }
+    
+    public OsTask CreateTask(int commandsCount, int ioCommandsCount)
+    { 
+        List<OsCommand> commands = new(commandsCount);
         
-        for (int i = 0; i < count; i++)
+        for (int i = 0; i < commandsCount; i++)
         {
-            OsCommand command = commandsFactory.Create(
-                (i < ioCommandsCount)? OsCommandType.IO: OsCommandType.Executable
+            OsCommand command = options.CommandsFactory.Create(
+                (i < ioCommandsCount)
+                    ? OsCommandType.IO
+                    : OsCommandType.Executable
             );
             
-            commands[i] = command;
+            commands.Add(command);
         }
         
-
-        Random.Shared.Shuffle(commands);
-        
+        Random.Shared.Shuffle(CollectionsMarshal.AsSpan(commands));
+            
         return new OsTask(
             commands,
             OsTaskState.Waiting,
-            Random.Shared.Next(0, MaxPriority)
+            Random.Shared.Next(0, options.MaxPriority)
         );
     }
 }

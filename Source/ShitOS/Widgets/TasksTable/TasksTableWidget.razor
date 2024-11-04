@@ -1,0 +1,27 @@
+@using ShitOS.Core.Task
+@using ShitOS.Core.TaskManager
+
+<table>
+    <tr>
+        <td>Кол-во Команд</td>
+        <td>Приоритет</td>
+        <td>Состояние</td>
+    </tr>
+    
+     
+     @foreach (OsTask task in Tasks) 
+     { 
+         <tr> 
+             <td>@task.Commands.Count</td> 
+             <td>@task.Priority</td> 
+             <td>@task.State</td> 
+         </tr> 
+     }
+</table>
+
+@code
+{
+    [Parameter]
+    [EditorRequired]
+    public required IEnumerable<OsTask> Tasks { get; set; }
+}

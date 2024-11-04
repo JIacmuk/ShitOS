@@ -1,12 +1,18 @@
+using ShitOS.Core.LoadBalancer;
 using ShitOS.Core.Task;
 
 namespace ShitOS.Core.TaskManager;
 
-public record OsTaskManagerOptions(
-    int MemorySize,
-    OsTaskFactory TaskFactory
-) {
+public class OsTaskManagerOptions
+{
     public OsTaskManagerOptions(
-        int memorySize
-    ) : this(memorySize, OsTaskFactory.Shared) {}
-};
+        int memorySize,
+        int cpuCount
+    ) {
+        MemorySize = memorySize;
+        CpuCount = cpuCount;
+    }
+    
+    public int MemorySize { get; }
+    public int CpuCount { get; }
+}

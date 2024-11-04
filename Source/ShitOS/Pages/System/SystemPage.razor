@@ -1,37 +1,68 @@
-@using ShitOS.Core
+@using global::System.Diagnostics
+@using ShitOS.Core.Command
+@using ShitOS.Core.LoadBalancer
 @using ShitOS.Core.Pocessor
 @using ShitOS.Core.Task
 @using ShitOS.Core.TaskManager
 @using ShitOS.Shared.Ui
 @using ShitOS.Widgets.TasksTable
+
 @page "/os"
 
-<CenteringWrapper>
-    <TasksTableWidget/>
-</CenteringWrapper>
+<WidthWrapper>
+    <TasksTableWidget Tasks="@(_processor.TaskManager.Tasks)"/>
+    
+    <button @onclick="AddTask">
+        add task
+    </button>
+
+    <button @onclick="Run">
+        run
+    </button>
+</WidthWrapper>
 
 @code
 {
-    public OsProcessor? Processor { get; private set; }
-    public RelativePriorityOsTaskManager? TaskManager { get; private set; }
-
-    protected override void OnInitialized()
+    private OsCommandsFactory _commandsFactory;
+    private OsTaskFactory _taskFactory;
+    private OsProcessor _processor;
+    
+    public SystemPage()
     {
+        _commandsFactory = OsCommandsFactory.Shared;
+        _taskFactory = OsTaskFactory.Shared;
+        
         OsTaskManagerOptions taskManagerOptions = new(
-            10_000,
-            OsTaskFactory.Shared
+        10_000,
+        3
         );
 
-        TaskManager = new RelativePriorityOsTaskManager(taskManagerOptions);
-
+        IOsLoadBalancer loadBalancer = new RealativePriorityLoadBalancer();
+        QueueOsTaskManager taskManager = new(taskManagerOptions, loadBalancer);
+        
         OsProcessorOptions processorOptions = new(
-            TaskManager,
-            1_000
+            taskManager,
+            1_00
         );
-        Processor = new OsProcessor(
+        
+        _processor = new OsProcessor(
             processorOptions
         );
+    }
 
-        base.OnInitialized();
+    [Inject]
+    public ILogger<SystemPage> Logger { get; init; }
+
+    void AddTask()
+    {
+        OsTask task = _taskFactory.CreateTask(100, 50);
+        _processor.TaskManager.AddTask(task);
+    }
+
+    void Run()
+    {
+        _processor.Proceess();
+        List<OsTask> tasks = _processor.TaskManager.Tasks.ToList();
+        Logger.LogCritical(String.Join("\n", tasks.Select(x => $"{x.State} {x.Priority} {x.Commands.Count} {x.Commands.Last().IsComplited}")));
     }
 }

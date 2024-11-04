@@ -1,5 +1,16 @@
+body{
+    --background-primary-color: #1d1d1d;
+    --background-secondary-color: #303030;
+    --background-tertiary-color: #252525;
+    --font-primary-color: #c0bfbc;
+}
+
+
 html, body, .app {
     height: 100%;
+    font-family: cursive;
+    color: var(--font-primary-color);
+    background-color: var(--background-primary-color);
 }
 
 .full-height {
