@@ -25,9 +25,19 @@ public class OsTask
     {
         if (_executionIndex > Commands.Count)
             return new OsTaskProcessResult(tics, false);
-        
+
         OsCommand currentCommand = Commands.ElementAt(_executionIndex);
-        
+
+        // Логика такая что если у нас состояние Waiting
+        // То следующая таска может увести в прерывание
+        // Абуз? Недочет в проектирование? Что оно тут забыло?
+        if (State == OsTaskState.Waiting)
+        {
+            State = SelectNewState(State, currentCommand.Type);
+            if (State == OsTaskState.Interrupted)
+                return new OsTaskProcessResult(tics, true);
+        }
+
         //В моменте задумался сам, а должна ли вообще быть ситуация,
         //когда одна таска вызывает процесс по несколько раз
         //ведь по изначальной идее либо тиков не хватит, либо таска закончится
@@ -51,7 +61,7 @@ public class OsTask
             // то больше не можем расходовать время этого процессора
             if (nextCommand.Type != currentCommand.Type)
             {
-                State = SelectNewState(State, currentCommand, nextCommand);
+                State = SelectNewState(State, nextCommand.Type);
                 return new OsTaskProcessResult(tics, true);
             }
             
@@ -62,22 +72,18 @@ public class OsTask
     }
 
 
-    private static OsTaskState SelectNewState(
+    internal static OsTaskState SelectNewState(
         OsTaskState previousState,
-        OsCommand previousCommand,
-        OsCommand nextCommand
+        OsCommandType nextCommandType
     ){
-        if (previousState is not (OsTaskState.Interrupted or OsTaskState.InProcess))
-            return previousState;
-        
-        if (nextCommand.Type == OsCommandType.IO)
+        if (nextCommandType == OsCommandType.IO)
             return OsTaskState.Interrupted;
-
-        if (previousState == OsTaskState.InProcess && nextCommand.Type == OsCommandType.Executable)
-            return OsTaskState.InProcess;
         
-        if (previousState == OsTaskState.Interrupted && nextCommand.Type == OsCommandType.Executable)
+        if (previousState == OsTaskState.Interrupted && nextCommandType == OsCommandType.Executable)
             return OsTaskState.Waiting;
+
+        if (nextCommandType == OsCommandType.Executable)
+            return OsTaskState.InProcess;
         
         return previousState;
     }
