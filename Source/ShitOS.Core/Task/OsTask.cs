@@ -20,15 +20,18 @@ public class OsTask
     public int Priority { get; }
     
     public int ExecutionCommandIndex => _executionIndex;
-
-
-    public void OnTaskSelected()
+    
+    /// <returns>true if state changed</returns>
+    public bool OnTaskSelected()
     {
         if (State == OsTaskState.Waiting)
         {
             OsCommand currentCommand = Commands.ElementAt(_executionIndex);
             State = SelectNewState(State, currentCommand.Type);
+            return true;
         }
+        
+        return false;
     }
 
     /// <param name="tics"></param>

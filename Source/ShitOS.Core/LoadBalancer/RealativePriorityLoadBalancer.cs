@@ -65,7 +65,7 @@ public class RealativePriorityLoadBalancer : IOsLoadBalancer
     private OsTask? SelectTaskOrDefault(int cpuIndex, OsTask? selectedTask)
     {
         
-        //Выбираем новоую исполняему таску
+        //Выбираем новую исполняемую таску
         if (selectedTask == null)
         { 
             selectedTask = SelectNewTask(cpuIndex);

@@ -6,17 +6,27 @@ namespace ShitOS.Core.TaskManager;
 
 
 public class QueueOsTaskManager : IOsTaskManager {
+    /// <inheritdoc/>
     public event Action<OsTask, OsTaskState>? TaskStateChanged;
+    /// <inheritdoc/>
     public event Action<OsTask>? TaskAdded;
+    /// <inheritdoc/>
     public event Action<OsTask>? TaskCompleted;
-    private readonly IOsLoadBalancer _loadBalancer;
 
+    private readonly IOsLoadBalancer _loadBalancer;
+    
     public QueueOsTaskManager(
         OsTaskManagerOptions options, 
         IOsLoadBalancer loadBalancer
     ){
         Options = options;
         _loadBalancer = loadBalancer;
+
+        TaskStateChanged += (task, state) =>
+        {
+            if (task.State == OsTaskState.Completed)
+                TaskCompleted?.Invoke(task);
+        };
     }
 
     public IEnumerable<OsTask> Tasks => _loadBalancer.Tasks;
@@ -30,10 +40,14 @@ public class QueueOsTaskManager : IOsTaskManager {
     {
         IEnumerable<OsTask> interruptedTasks = _loadBalancer.InterruptedTasks;
         foreach (OsTask interruptedTask in interruptedTasks)
-        {
-            interruptedTask.Process(tics);
+        { 
+            OsTaskState previousState = interruptedTask.State; 
+          
+            OsTaskProcessResult result = interruptedTask.Process(tics);
+            
+            if (result.StateChanged)
+                TaskStateChanged?.Invoke(interruptedTask, previousState);
         }
-        
     }
     
     /// <summary>
@@ -52,8 +66,14 @@ public class QueueOsTaskManager : IOsTaskManager {
                 if (currentTask == null)
                     break;
                 
+                OsTaskState previousState = currentTask.State;
+                
                 OsTaskProcessResult result = currentTask.Process(processorTics);
                 processorTics = result.RemainingTics;
+
+                if (result.StateChanged)
+                    TaskStateChanged?.Invoke(currentTask, previousState);
+                
             } while (processorTics > 0);
         }
     }
@@ -62,6 +82,7 @@ public class QueueOsTaskManager : IOsTaskManager {
     public void AddTask(OsTask task)
     {
         _loadBalancer.AddTask(task);
+        TaskAdded?.Invoke(task);
     }
 
     /// <inheritdoc/>

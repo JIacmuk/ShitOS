@@ -11,19 +11,19 @@ public class OsTaskFactory(
         new OsTaskFactoryOptions(1000, OsCommandsFactory.Shared)
     );
 
-    public OsTask CreateTask(int commandsCount)
+    public OsTask CreateTask(int totalCommandsCount)
     {
         return CreateTask(
-            commandsCount,
-            Random.Shared.Next(0, commandsCount)
+            totalCommandsCount,
+            Random.Shared.Next(0, totalCommandsCount)
         );
     }
     
-    public OsTask CreateTask(int commandsCount, int ioCommandsCount)
+    public OsTask CreateTask(int totalCommandsCount, int ioCommandsCount)
     { 
-        List<OsCommand> commands = new(commandsCount);
+        List<OsCommand> commands = new(totalCommandsCount);
         
-        for (int i = 0; i < commandsCount; i++)
+        for (int i = 0; i < totalCommandsCount; i++)
         {
             OsCommand command = options.CommandsFactory.Create(
                 (i < ioCommandsCount)
