@@ -6,13 +6,11 @@ namespace ShitOS.Core.LoadBalancer;
 public class RealativePriorityLoadBalancer : IOsLoadBalancer
 {
     private readonly List<OsTask> _tasks;
-    private readonly List<OsTask> _completedTasks;
     private readonly IDictionary<int, OsTask?> _executableTasks;
     
     public RealativePriorityLoadBalancer()
     {
         _tasks = new List<OsTask>();
-        _completedTasks = new List<OsTask>();
         _executableTasks = new Dictionary<int, OsTask?>();
     }
     
@@ -22,23 +20,13 @@ public class RealativePriorityLoadBalancer : IOsLoadBalancer
     
     #pragma warning disable
     /// <inheritdoc/>
-    public IEnumerable<OsTask> Tasks => _executableTasks.Values
-        .Where(x => x != null)
-        //.Cast<OsTask>()
-        .Concat(_tasks)
-        .Concat(_completedTasks);
+    public IEnumerable<OsTask> Tasks => _tasks.OrderBy(x => x.State);
     
     #pragma warning restore
     
     /// <inheritdoc/>
     public void AddTask(OsTask task)
     {
-        if (task.State is OsTaskState.Completed)
-        {
-            _completedTasks.Add(task);
-            return;
-        }
-        
         _tasks.Add(task);
         _tasks.Sort((x, y) => y.Priority - x.Priority);
     }
@@ -56,7 +44,7 @@ public class RealativePriorityLoadBalancer : IOsLoadBalancer
     /// <inheritdoc/>
     public OsTask? SelectTaskOrDefault(int cpuIndex)
     {
-        if (_tasks.Count == 0)
+        if ( _tasks.Count == 0)
             return null;
 
         _executableTasks.TryGetValue(
@@ -73,7 +61,6 @@ public class RealativePriorityLoadBalancer : IOsLoadBalancer
     
     private OsTask? SelectTaskOrDefault(int cpuIndex, OsTask? selectedTask)
     {
-        
         //Выбираем новую исполняемую таску
         if (selectedTask == null)
         { 
@@ -81,19 +68,13 @@ public class RealativePriorityLoadBalancer : IOsLoadBalancer
             selectedTask?.OnTaskSelected();
         }
 
-        //Таска может уйти в прерывание сазу после выбора
-        
+        //Таска может уйти в прерывание сразу после выбора
         if (selectedTask?.State is OsTaskState.Completed or OsTaskState.Interrupted)
         {
-            AddTask(selectedTask);
-            
             selectedTask = SelectNextTask(cpuIndex);
             selectedTask?.OnTaskSelected();
             selectedTask = SelectTaskOrDefault(cpuIndex, selectedTask);
         }
-        
-        if (selectedTask != null)
-            _tasks.Remove(selectedTask);
         
         return selectedTask;
     }
@@ -101,6 +82,6 @@ public class RealativePriorityLoadBalancer : IOsLoadBalancer
     private OsTask? SelectNextTask(int cpuIndex)
     {
         return _tasks
-            .FirstOrDefault(task => task.State is not OsTaskState.Interrupted);
+            .FirstOrDefault(task => task.State is OsTaskState.Waiting);
     }
 }

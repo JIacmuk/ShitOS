@@ -10,28 +10,28 @@ public class OsProcessor
 {
     private DateTimeOffset _lastTicDate;
     private double _accumulatedTics;
-    private readonly OsProcessorOptions _options;
     
     public OsProcessor(OsProcessorOptions options)
     {
         _lastTicDate = DateTimeOffset.Now;
         _accumulatedTics = 0;
-        _options = options;
+        Options = options;
     }
+
+    public OsProcessorOptions Options { get; set; }
+    public IOsTaskManager TaskManager => Options.TaskManager;
     
-    public IOsTaskManager TaskManager => _options.TaskManager;
-    
-    public void Proceess()
+    public void Process()
     {  
         DateTimeOffset now = DateTimeOffset.Now;
-        _accumulatedTics += ( now - _lastTicDate ).TotalSeconds * _options.TicsPerSecond;
+        _accumulatedTics += ( now - _lastTicDate ).TotalSeconds * Options.TicsPerSecond;
         _lastTicDate = now;
 
         int executableTics = Convert.ToInt32(_accumulatedTics);
         if (executableTics > 1)
         {
             _accumulatedTics -= executableTics;
-            _options.TaskManager.Process(executableTics);
+            Options.TaskManager.Process(executableTics);
         }
     }
 }

@@ -7,14 +7,22 @@ public class OsTask
 {
     private int _executionIndex;
 
-    public OsTask(int id, List<OsCommand> commands, OsTaskState state, int priority)
-    {
+    public OsTask(
+        int id, 
+        int memory,
+        int requiredTics,
+        int priority,
+        OsTaskState state,
+        params List<OsCommand> commands
+    ){
         _executionIndex = 0;
         
         Id = id;
-        Commands = commands;
-        State = state;
+        Memory = memory;
+        RequiredTics = requiredTics;
         Priority = priority;
+        State = state;
+        Commands = commands;
     }
 
 
@@ -22,7 +30,8 @@ public class OsTask
     public IReadOnlyCollection<OsCommand> Commands { get; }
     public OsTaskState State { get; private set; }
     public int Priority { get; }
-    
+    public int Memory { get; }
+    public int RequiredTics { get; }
     public int ExecutionCommandIndex => _executionIndex;
     
     /// <returns>true if state changed</returns>

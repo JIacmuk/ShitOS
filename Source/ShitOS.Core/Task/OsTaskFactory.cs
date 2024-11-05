@@ -30,6 +30,7 @@ public class OsTaskFactory
     public OsTask CreateTask(int totalCommandsCount, int ioCommandsCount)
     { 
         List<OsCommand> commands = new(totalCommandsCount);
+        OsCommandsFactory commandsFactory = Options.CommandsFactory;
         
         for (int i = 0; i < totalCommandsCount; i++)
         {
@@ -41,14 +42,26 @@ public class OsTaskFactory
             
             commands.Add(command);
         }
+
+        OsCommandOptions ioOptinos = commandsFactory.IOOptions;
+        OsCommandOptions executableOptions = commandsFactory.ExceutableOptions;
+        int executableCount = (totalCommandsCount - ioCommandsCount);
+        
+        int memory = ioOptinos.RequiredMemory * ioCommandsCount;
+        memory += executableOptions.RequiredMemory * executableCount;
+        
+        int requiredTics = ioOptinos.RequiredTics * ioCommandsCount;
+        requiredTics += executableOptions.RequiredTics * executableCount;
         
         Random.Shared.Shuffle(CollectionsMarshal.AsSpan(commands));
             
         return new OsTask(
             _taskCount++,
-            commands,
+            memory,
+            requiredTics,
+            Random.Shared.Next(0, Options.MaxPriority),
             OsTaskState.Waiting,
-            Random.Shared.Next(0, Options.MaxPriority)
+            commands
         );
     }
 }
