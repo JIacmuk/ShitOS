@@ -16,8 +16,20 @@ public class OsTask
     }
 
     public IReadOnlyCollection<OsCommand> Commands { get; }
-    public OsTaskState State { get; set; }
+    public OsTaskState State { get; private set; }
     public int Priority { get; }
+    
+    public int ExecutionCommandIndex => _executionIndex;
+
+
+    public void OnTaskSelected()
+    {
+        if (State == OsTaskState.Waiting)
+        {
+            OsCommand currentCommand = Commands.ElementAt(_executionIndex);
+            State = SelectNewState(State, currentCommand.Type);
+        }
+    }
 
     /// <param name="tics"></param>
     /// <returns>Оставшееся количество тиков, после выцполнения</returns>
@@ -27,16 +39,6 @@ public class OsTask
             return new OsTaskProcessResult(tics, false);
 
         OsCommand currentCommand = Commands.ElementAt(_executionIndex);
-
-        // Логика такая что если у нас состояние Waiting
-        // То следующая таска может увести в прерывание
-        // Абуз? Недочет в проектирование? Что оно тут забыло?
-        if (State == OsTaskState.Waiting)
-        {
-            State = SelectNewState(State, currentCommand.Type);
-            if (State == OsTaskState.Interrupted)
-                return new OsTaskProcessResult(tics, true);
-        }
 
         //В моменте задумался сам, а должна ли вообще быть ситуация,
         //когда одна таска вызывает процесс по несколько раз

@@ -45,16 +45,16 @@ public class QueueOsTaskManager : IOsTaskManager {
         IOsLoadBalancer loadBalancer = _loadBalancer;
         for (int i = 0; i < Options.CpuCount; i++)
         {
-            OsTask? currentTask;
+            int processorTics = tics;
             do
             {
-                currentTask = loadBalancer.SelectTaskOrDefault(i);
+                OsTask? currentTask = loadBalancer.SelectTaskOrDefault(i);
                 if (currentTask == null)
                     break;
                 
-                OsTaskProcessResult result = currentTask.Process(tics);
-                tics = result.RemainingTics;
-            } while (tics > 0);
+                OsTaskProcessResult result = currentTask.Process(processorTics);
+                processorTics = result.RemainingTics;
+            } while (processorTics > 0);
         }
     }
 

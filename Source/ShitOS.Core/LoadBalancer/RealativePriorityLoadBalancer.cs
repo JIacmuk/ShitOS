@@ -18,13 +18,20 @@ public class RealativePriorityLoadBalancer : IOsLoadBalancer
     public IEnumerable<OsTask> InterruptedTasks => _tasks
         .Where(x => x.State is OsTaskState.Interrupted);
     
+    #pragma warning disable
     /// <inheritdoc/>
-    public IEnumerable<OsTask> Tasks => _tasks;
-
+    public IEnumerable<OsTask> Tasks => _executableTasks.Values
+        .Where(x => x != null)
+        //.Cast<OsTask>()
+        .Concat(_tasks);
+    
+    #pragma warning restore
+    
     /// <inheritdoc/>
     public void AddTask(OsTask task)
     {
         _tasks.Add(task);
+        _tasks.Sort((x, y) => y.Priority - x.Priority);
     }
     
     /// <inheritdoc/>
@@ -40,8 +47,6 @@ public class RealativePriorityLoadBalancer : IOsLoadBalancer
     /// <inheritdoc/>
     public OsTask? SelectTaskOrDefault(int cpuIndex)
     {
-        // Тупняк с выбором задачи, тк.. задачи берутся из общего пула,
-        // могут быть выбраны зарезервированные другим потоком таски
         if (_tasks.Count == 0)
             return null;
 
@@ -50,20 +55,43 @@ public class RealativePriorityLoadBalancer : IOsLoadBalancer
             out OsTask? selectedTask
         );
         
+        selectedTask = SelectTaskOrDefault(cpuIndex, selectedTask);
+        _executableTasks[cpuIndex] = selectedTask;
         
-        //Выбираем новоую исполняему таску, если старая прервалась или стопнулась
-        if (selectedTask == null || (selectedTask.State is OsTaskState.Completed or OsTaskState.Interrupted))
-        {
-            selectedTask = _tasks
-                .Where(task =>
-                    task.State is OsTaskState.InProcess or OsTaskState.Waiting
-                )
-                .OrderBy(task => task.Priority)
-                .FirstOrDefault();
-            
-            _executableTasks[cpuIndex] = selectedTask;
+        return selectedTask;
+    }
+    
+    
+    private OsTask? SelectTaskOrDefault(int cpuIndex, OsTask? selectedTask)
+    {
+        
+        //Выбираем новоую исполняему таску
+        if (selectedTask == null)
+        { 
+            selectedTask = SelectNewTask(cpuIndex);
+            selectedTask?.OnTaskSelected();
         }
 
+        //Таска может уйти в прерывание сазу после выбора
+        
+        if (selectedTask?.State is OsTaskState.Completed or OsTaskState.Interrupted)
+        {
+            AddTask(selectedTask);
+            
+            selectedTask = SelectNewTask(cpuIndex);
+            selectedTask?.OnTaskSelected();
+            selectedTask = SelectTaskOrDefault(cpuIndex, selectedTask);
+        }
+        
+        if (selectedTask != null)
+            _tasks.Remove(selectedTask);
+        
         return selectedTask;
+    }
+
+    private OsTask? SelectNewTask(int cpuIndex)
+    {
+        return _tasks
+            .FirstOrDefault(task => task.State is OsTaskState.InProcess or OsTaskState.Waiting);
     }
 }

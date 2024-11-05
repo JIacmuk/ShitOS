@@ -12,7 +12,7 @@ public class OsCommandOptions(
     public static OsCommandOptions Executable { get; } = new OsCommandOptions(
         OsCommandType.Executable,
         6,
-        40
+        5
     );
     public static OsCommandOptions IO { get; } = new OsCommandOptions(
         OsCommandType.IO,
