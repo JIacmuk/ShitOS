@@ -26,9 +26,12 @@
     private OsCommandsFactory _commandsFactory;
     private OsTaskFactory _taskFactory;
     private OsProcessor _processor;
+    private PeriodicTimer _timer;
+
     
     public SystemPage()
     {
+        _timer = new(TimeSpan.FromMilliseconds(200));
         _commandsFactory = OsCommandsFactory.Shared;
         _taskFactory = OsTaskFactory.Shared;
         
@@ -59,10 +62,13 @@
         _processor.TaskManager.AddTask(task);
     }
 
-    void Run()
+    async Task Run()
     {
-        _processor.Proceess();
-        List<OsTask> tasks = _processor.TaskManager.Tasks.ToList();
-        Logger.LogCritical(String.Join("\n", tasks.Select(x => $"{x.State} {x.Priority} {x.Commands.Count} {x.Commands.Last().IsComplited}")));
+        while (true)
+        {
+            _processor.Proceess();
+            StateHasChanged();`
+            await _timer.WaitForNextTickAsync();
+        }
     }
 }
