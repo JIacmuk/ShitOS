@@ -3,10 +3,18 @@ using ShitOS.Core.Command;
 
 namespace ShitOS.Core.Task;
 
-public class OsTaskFactory(
-    OsTaskFactoryOptions options
-)
+public class OsTaskFactory
 {
+    private int _taskCount;
+
+    public OsTaskFactory(OsTaskFactoryOptions options)
+    {
+        _taskCount = 0;
+        Options = options;
+    }
+
+    public OsTaskFactoryOptions Options { get; private set; }
+
     public static OsTaskFactory Shared { get; } = new OsTaskFactory(
         new OsTaskFactoryOptions(1000, OsCommandsFactory.Shared)
     );
@@ -25,7 +33,7 @@ public class OsTaskFactory(
         
         for (int i = 0; i < totalCommandsCount; i++)
         {
-            OsCommand command = options.CommandsFactory.Create(
+            OsCommand command = Options.CommandsFactory.Create(
                 (i < ioCommandsCount)
                     ? OsCommandType.IO
                     : OsCommandType.Executable
@@ -37,9 +45,10 @@ public class OsTaskFactory(
         Random.Shared.Shuffle(CollectionsMarshal.AsSpan(commands));
             
         return new OsTask(
+            _taskCount++,
             commands,
             OsTaskState.Waiting,
-            Random.Shared.Next(0, options.MaxPriority)
+            Random.Shared.Next(0, Options.MaxPriority)
         );
     }
 }

@@ -36,8 +36,8 @@
         _taskFactory = OsTaskFactory.Shared;
         
         OsTaskManagerOptions taskManagerOptions = new(
-        10_000,
-        3
+            10_000,
+            3
         );
 
         IOsLoadBalancer loadBalancer = new RealativePriorityLoadBalancer();
@@ -67,7 +67,7 @@
         while (true)
         {
             _processor.Proceess();
-            StateHasChanged();`
+            StateHasChanged();
             await _timer.WaitForNextTickAsync();
         }
     }

@@ -6,11 +6,13 @@ namespace ShitOS.Core.LoadBalancer;
 public class RealativePriorityLoadBalancer : IOsLoadBalancer
 {
     private readonly List<OsTask> _tasks;
+    private readonly List<OsTask> _completedTasks;
     private readonly IDictionary<int, OsTask?> _executableTasks;
     
     public RealativePriorityLoadBalancer()
     {
         _tasks = new List<OsTask>();
+        _completedTasks = new List<OsTask>();
         _executableTasks = new Dictionary<int, OsTask?>();
     }
     
@@ -23,13 +25,20 @@ public class RealativePriorityLoadBalancer : IOsLoadBalancer
     public IEnumerable<OsTask> Tasks => _executableTasks.Values
         .Where(x => x != null)
         //.Cast<OsTask>()
-        .Concat(_tasks);
+        .Concat(_tasks)
+        .Concat(_completedTasks);
     
     #pragma warning restore
     
     /// <inheritdoc/>
     public void AddTask(OsTask task)
     {
+        if (task.State is OsTaskState.Completed)
+        {
+            _completedTasks.Add(task);
+            return;
+        }
+        
         _tasks.Add(task);
         _tasks.Sort((x, y) => y.Priority - x.Priority);
     }
@@ -68,7 +77,7 @@ public class RealativePriorityLoadBalancer : IOsLoadBalancer
         //Выбираем новую исполняемую таску
         if (selectedTask == null)
         { 
-            selectedTask = SelectNewTask(cpuIndex);
+            selectedTask = SelectNextTask(cpuIndex);
             selectedTask?.OnTaskSelected();
         }
 
@@ -78,7 +87,7 @@ public class RealativePriorityLoadBalancer : IOsLoadBalancer
         {
             AddTask(selectedTask);
             
-            selectedTask = SelectNewTask(cpuIndex);
+            selectedTask = SelectNextTask(cpuIndex);
             selectedTask?.OnTaskSelected();
             selectedTask = SelectTaskOrDefault(cpuIndex, selectedTask);
         }
@@ -89,9 +98,9 @@ public class RealativePriorityLoadBalancer : IOsLoadBalancer
         return selectedTask;
     }
 
-    private OsTask? SelectNewTask(int cpuIndex)
+    private OsTask? SelectNextTask(int cpuIndex)
     {
         return _tasks
-            .FirstOrDefault(task => task.State is OsTaskState.InProcess or OsTaskState.Waiting);
+            .FirstOrDefault(task => task.State is not OsTaskState.Interrupted);
     }
 }

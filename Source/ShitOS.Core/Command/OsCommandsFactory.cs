@@ -10,8 +10,8 @@ public class OsCommandsFactory
     {
         return type switch
         {
-            OsCommandType.IO => new OsCommand(OsCommandOptions.IO),
-            OsCommandType.Executable => new OsCommand(OsCommandOptions.Executable),
+            OsCommandType.IO => new OsCommand(IOOptions),
+            OsCommandType.Executable => new OsCommand(ExceutableOptions),
             _ => throw new ArgumentException("Invalid command type", nameof(type))
         };
     }
