@@ -1,0 +1,39 @@
+.row {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.options {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+}
+
+::deep .options-group{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+    padding: 20px;
+    border-radius: 4px;
+    background-color: var(--background-secondary-color);
+    outline: var(--outline-color) 1px solid;
+    
+}
+
+::deep input {
+    background-color: var(--background-tertiary-color);
+    outline: var(--outline-color) 1px solid;
+    padding: 5px;
+    border-radius: 4px;
+}
+
+::deep .rounded_button {
+    border-radius: 4px;
+    text-align: center;
+    outline: var(--outline-color) 1px solid;
+}

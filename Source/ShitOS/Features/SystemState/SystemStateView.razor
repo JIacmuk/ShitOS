@@ -1,0 +1,19 @@
+@using ShitOS.Core.TaskManager
+<div class="options-group">
+    <span>Mono: @State.Mono</span>
+    <span>Multi: @State.Multi</span>
+    @if (State.Multi > 0)
+    { 
+        <span>Mono/Multi %: @((float)State.Mono/State.Multi * 100)</span>
+    }
+    else
+    {
+        <span>Mono/Multi %: infinity</span>
+    }
+</div>
+
+
+@code {
+    [Parameter, EditorRequired]
+    public SystemState State { get; set; }
+}

@@ -5,35 +5,77 @@
 @using ShitOS.Core.Task
 @using ShitOS.Core.TaskManager
 @using ShitOS.Shared.Ui
-@using ShitOS.Widgets.TasksTable
+@using ShitOS.Features.TasksTable
+@using ShitOS.Features.SystemOptions
+@using ShitOS.Features.TaskOptions
+@using ShitOS.Features.CommandOptions
+@using ShitOS.Features.TaskManagerOptions
+@using ShitOS.Features.SystemState
 
 @page "/os"
 
 <WidthWrapper>
-    <TasksTableWidget Tasks="@(_processor.TaskManager.Tasks)"/>
-    
-    <button @onclick="AddTask">
-        add task
-    </button>
+    <div class="row">
+        <div class="options">
+            <SystemStateView
+                State="TaskManager.SystemState"/>
+            
+            <button class="rounded_button" @onclick="Run">Запустить</button>
+            <TaskOptionsController
+                TaskFactory="TaskFactory"
+                TotalCount="-1"
+                IoCommandsCount="-1"
+                MaxPriority="1000"
+                OnAddTask="AddTask"/>
 
-    <button @onclick="Run">
-        run
-    </button>
+            <AccumulatorOptionsView
+                Options="AccumulatorOptions"/>
+
+            <TaskManagerOptionsView
+                CpuCount="TaskManager.Options.CpuCount"
+                Memory="TaskManager.Options.MemorySize"/>
+
+            <CommandOptionsController
+                Memory="CommandsFactory.IOOptions.RequiredMemory"
+                Tics="CommandsFactory.IOOptions.RequiredTics"
+                CommandType="OsCommandType.IO"
+                OnOptionsChanged="(options) => CommandsFactory.IOOptions = options"/>
+
+            <CommandOptionsController
+                Memory="CommandsFactory.ExceutableOptions.RequiredMemory"
+                Tics="CommandsFactory.ExceutableOptions.RequiredTics"
+                CommandType="OsCommandType.Executable"
+                OnOptionsChanged="(options) => CommandsFactory.ExceutableOptions = options"/>
+        </div>
+        <TasksTableView TaskManager="TaskManager"/>
+    </div>
 </WidthWrapper>
 
 @code
 {
     private OsCommandsFactory _commandsFactory;
     private OsTaskFactory _taskFactory;
-    private OsProcessor _processor;
+    private OsAccumulator _accumulator;
     private PeriodicTimer _timer;
 
-    
+    public AccumulatorOptions AccumulatorOptions { get; set; }
+
     public SystemPage()
     {
-        _timer = new(TimeSpan.FromMilliseconds(200));
-        _commandsFactory = OsCommandsFactory.Shared;
-        _taskFactory = OsTaskFactory.Shared;
+        AccumulatorOptions = new AccumulatorOptions()
+        {
+            Fps = 10,
+            TicsPerSecond = 2
+        };
+        
+        _timer = new(TimeSpan.FromMilliseconds(100));
+        
+        _commandsFactory = new OsCommandsFactory();
+        _commandsFactory.ExceutableOptions = OsCommandOptions.Executable;
+        _commandsFactory.IOOptions = OsCommandOptions.IO;
+        
+        OsTaskFactoryOptions taskFactoryOptions = new OsTaskFactoryOptions(1000, _commandsFactory);
+        _taskFactory = new OsTaskFactory(taskFactoryOptions);
         
         OsTaskManagerOptions taskManagerOptions = new(
             10_000,
@@ -45,29 +87,32 @@
         
         OsProcessorOptions processorOptions = new(
             taskManager,
-            10
+            AccumulatorOptions.TicsPerSecond
         );
         
-        _processor = new OsProcessor(
+        _accumulator = new OsAccumulator(
             processorOptions
         );
     }
 
-    [Inject]
-    public ILogger<SystemPage> Logger { get; init; }
-
-    void AddTask()
+    public OsCommandsFactory CommandsFactory => _commandsFactory;
+    public OsTaskFactory TaskFactory => _taskFactory;
+    public IOsTaskManager TaskManager => _accumulator.TaskManager;
+    
+    void AddTask(OsTask task)
     {
-        OsTask task = _taskFactory.CreateTask(100, 20);
-        _processor.TaskManager.AddTask(task);
+        _accumulator.TaskManager.AddTask(task);
+        StateHasChanged();
     }
 
     async Task Run()
     {
         while (true)
         {
-            _processor.Proceess();
+            _accumulator.Process();
             StateHasChanged();
+            _timer.Period = TimeSpan.FromSeconds(1.0d / AccumulatorOptions.Fps);
+            _accumulator.Options.TicsPerSecond = AccumulatorOptions.TicsPerSecond;
             await _timer.WaitForNextTickAsync();
         }
     }

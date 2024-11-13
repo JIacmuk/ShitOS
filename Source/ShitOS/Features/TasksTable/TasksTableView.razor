@@ -1,29 +1,57 @@
 @using ShitOS.Core.Task
 @using ShitOS.Core.TaskManager
+@using ShitOS.Shared.Svg
 
-<table>
-    <tr>
-        <td>Кол-во Команд</td>
-        <td>Приоритет</td>
-        <td>Состояние</td>
-        <td>Выполнение</td>
-    </tr>
-    
-     
-     @foreach (OsTask task in Tasks) 
-     { 
-         <tr> 
-             <td>@task.Commands.Count</td> 
-             <td>@task.Priority</td> 
-             <td>@task.State</td> 
-             <td>@task.ExecutionCommandIndex / @task.Commands.Count</td>
-         </tr> 
-     }
+<table class="tasks-table">
+    <thead>
+        <tr>
+            <td>Task Id</td>
+            <td>Приоритет</td>
+            <td>Память</td>
+            <td>Такты</td>
+            <td>Выполнение</td>
+            <td>Состояние</td>
+            <td>Действия</td>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (OsTask task in Tasks.OrderBy(x => -x.Priority))
+        {
+            <tr>
+                <td>@task.Id</td>
+                <td>@task.Priority</td>
+                <td>@task.Memory</td>
+                <td>@task.RequiredTics</td>
+                <td>@task.ExecutionCommandIndex / @task.Commands.Count</td>
+                <td>@task.State</td>
+                <td>
+                    <button @onclick="() => RemoveTask(task)"><DeleteForeverIcon/></button>
+                    <button @onclick="() => StopTask(task)"><PauseIcon/></button>
+                </td>
+            </tr>
+        }
+    </tbody>
 </table>
 
 @code
 {
     [Parameter]
     [EditorRequired]
-    public required IEnumerable<OsTask> Tasks { get; set; }
+    public required IOsTaskManager TaskManager { get; set; }
+
+    public IEnumerable<OsTask> Tasks => TaskManager.Tasks;
+    
+    public void RemoveTask(OsTask task)
+    {
+        TaskManager.RemoveTask(task);
+    }
+    
+    public void StopTask(OsTask task)
+    {
+        if (task.State != OsTaskState.Paused)
+            task.State = OsTaskState.Paused;
+        else
+            task.State = OsTaskState.Waiting;
+    }
 }

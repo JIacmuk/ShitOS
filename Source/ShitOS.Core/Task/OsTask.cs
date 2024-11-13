@@ -28,7 +28,7 @@ public class OsTask
 
     public int Id { get; }
     public IReadOnlyCollection<OsCommand> Commands { get; }
-    public OsTaskState State { get; private set; }
+    public OsTaskState State { get; set; }
     public int Priority { get; }
     public int Memory { get; }
     public int RequiredTics { get; }

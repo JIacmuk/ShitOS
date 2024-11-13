@@ -18,6 +18,10 @@ public interface IOsTaskManager
     /// </summary>
     event Action<OsTask>? TaskAdded;
     
+    public SystemState SystemState { get; }
+    
+    public OsTaskManagerOptions Options { get; }
+    
     /// <summary>
     /// Вызывается по завершению таски
     /// </summary>
@@ -29,6 +33,7 @@ public interface IOsTaskManager
     /// Добавление новой задачи
     /// </summary>
     void AddTask(OsTask task);
+    void RemoveTask(OsTask taskId);
     
     /// <summary>
     /// Эмуляция указанного количества тиков
@@ -36,4 +41,5 @@ public interface IOsTaskManager
     /// </summary>
     /// <param name="tics"> Количество тиков </param>
     void Process(int tics);
+
 }

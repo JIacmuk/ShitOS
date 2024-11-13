@@ -17,16 +17,13 @@
       <PublishedContent>wwwroot\scripts\service-worker.published.js</PublishedContent>
     </ServiceWorker>
   </ItemGroup>
-
+  
   <ItemGroup>
-    <_ContentIncludedByDefault Remove="Pages\Counter\CounterPage.razor" />
-    <_ContentIncludedByDefault Remove="Pages\Home\HomePage.razor" />
-    <_ContentIncludedByDefault Remove="Pages\Weather\WeatherPage.razor" />
-    <_ContentIncludedByDefault Remove="Widgets\NavMenu\NavMenuWidget.razor" />
+    <ProjectReference Include="..\ShitOS.Core\ShitOS.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ShitOS.Core\ShitOS.Core.csproj" />
+    <AdditionalFiles Include="Features\TasksTable\TasksTableView.razor" />
   </ItemGroup>
 
 </Project>

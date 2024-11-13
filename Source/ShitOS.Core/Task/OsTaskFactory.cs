@@ -13,7 +13,7 @@ public class OsTaskFactory
         Options = options;
     }
 
-    public OsTaskFactoryOptions Options { get; private set; }
+    public OsTaskFactoryOptions Options { get; set; }
 
     public static OsTaskFactory Shared { get; } = new OsTaskFactory(
         new OsTaskFactoryOptions(1000, OsCommandsFactory.Shared)

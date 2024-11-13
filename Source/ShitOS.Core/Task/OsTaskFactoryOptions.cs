@@ -11,7 +11,7 @@ public record OsTaskFactoryOptions
         this.MaxPriority = MaxPriority;
         this.CommandsFactory = CommandsFactory;
      }
-
+    
     public int MaxPriority { get; }
     public OsCommandsFactory CommandsFactory { get; }
     

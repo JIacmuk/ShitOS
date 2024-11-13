@@ -1,0 +1,13 @@
+@using ShitOS.Core.Pocessor
+<div class="options-group">
+    <label for="fps">fps</label>
+    <input id="fps" type="number" @bind="Options.Fps"/>
+    <label for="tics">Тиков в секунду</label>
+    <input id="tics" type="number" @bind="Options.TicsPerSecond"/>
+</div>
+
+@code
+{
+    [Parameter, EditorRequired] 
+    public AccumulatorOptions Options { get; set; }
+}

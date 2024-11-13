@@ -4,7 +4,6 @@ using ShitOS.Core.Task;
 
 namespace ShitOS.Core.TaskManager;
 
-
 public class QueueOsTaskManager : IOsTaskManager {
     /// <inheritdoc/>
     public event Action<OsTask, OsTaskState>? TaskStateChanged;
@@ -20,6 +19,7 @@ public class QueueOsTaskManager : IOsTaskManager {
         IOsLoadBalancer loadBalancer
     ){
         Options = options;
+        SystemState = new SystemState();
         _loadBalancer = loadBalancer;
 
         TaskStateChanged += (task, state) =>
@@ -30,32 +30,36 @@ public class QueueOsTaskManager : IOsTaskManager {
     }
 
     public IEnumerable<OsTask> Tasks => _loadBalancer.Tasks;
+    public SystemState SystemState { get; }
     public OsTaskManagerOptions Options { get; set; }
     
     /// <summary>
     /// Выполняется на пофиг, типа фоном, не задумываясь
     /// </summary>
-    /// <param name="tics"></param>
-    private void ProcessInterruptedTasks(int tics)
+    /// <param name="tics">Использованные тики</param>
+    private int ProcessInterruptedTasks(int tics)
     {
+        int usedTics = 0;
         IEnumerable<OsTask> interruptedTasks = _loadBalancer.InterruptedTasks;
         foreach (OsTask interruptedTask in interruptedTasks)
         { 
             OsTaskState previousState = interruptedTask.State; 
           
             OsTaskProcessResult result = interruptedTask.Process(tics);
-            
+            usedTics += (tics - result.RemainingTics);
             if (result.StateChanged)
                 TaskStateChanged?.Invoke(interruptedTask, previousState);
         }
+        return usedTics;
     }
     
     /// <summary>
     /// Выполнение завист от количетсво процессоров
     /// </summary>
-    /// <param name="tics"></param>
-    private void ProcessNormalTasks(int tics)
+    /// <param name="tics">Использованные тики</param>
+    private int ProcessNormalTasks(int tics)
     {
+        int usedTics = 0;
         IOsLoadBalancer loadBalancer = _loadBalancer;
         for (int i = 0; i < Options.CpuCount; i++)
         {
@@ -75,7 +79,9 @@ public class QueueOsTaskManager : IOsTaskManager {
                     TaskStateChanged?.Invoke(currentTask, previousState);
                 
             } while (processorTics > 0);
+            usedTics += tics - processorTics;
         }
+        return usedTics;
     }
 
 
@@ -85,19 +91,26 @@ public class QueueOsTaskManager : IOsTaskManager {
         TaskAdded?.Invoke(task);
     }
 
+    public void RemoveTask(OsTask task)
+    {
+        _loadBalancer.RemoveTask(task);
+    }
+
     /// <inheritdoc/>
     public virtual void Process(int tics)
     {
         IOsLoadBalancer loadBalancer = _loadBalancer;
         int ticsInRound = loadBalancer.GetMaxTicsInRound(tics);
-        
+
         for (int i = tics; i > 0;)
         {
             tics = (ticsInRound > i) ? i : tics;
             
-            ProcessNormalTasks(tics);
-            ProcessInterruptedTasks(tics);
+            int monoTics = ProcessNormalTasks(tics);
+            int multiTics = ProcessInterruptedTasks(tics) + monoTics;
             
+            SystemState.Mono += monoTics;
+            SystemState.Multi += multiTics;
             i -= tics;
         }
 

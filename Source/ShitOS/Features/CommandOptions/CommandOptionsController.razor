@@ -1,0 +1,30 @@
+@using ShitOS.Core.Command
+@using ShitOS.Core.LoadBalancer
+<div class="options-group">
+    <label for="tics-@CommandType">Требуемые тики @CommandType</label>
+    <input id="tics--@CommandType" @bind="_tics"/>
+    <label for="memory-@CommandType">Требуемая память @CommandType</label>
+    <input id="memory-@CommandType" @bind="_memory"/>
+    <button class="rounded_button" @onclick="SetOptions"> Применить </button>
+</div>
+
+@code{
+    private int _tics;
+    private int _memory;
+    
+    [Parameter, EditorRequired] 
+    public OsCommandType CommandType { get; set; }
+    [Parameter, EditorRequired] 
+    public Action<OsCommandOptions>? OnOptionsChanged { get; set; }
+    [Parameter, EditorRequired] 
+    public int Tics { get => _tics; set => _tics = value; }
+    [Parameter, EditorRequired] 
+    public int Memory  { get => _memory; set => _memory = value; }
+
+
+    private void SetOptions()
+    {
+        OnOptionsChanged?.Invoke(new OsCommandOptions(CommandType, Memory, Tics));
+    }
+
+}

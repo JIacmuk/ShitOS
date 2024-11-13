@@ -3,12 +3,14 @@ body{
     --background-secondary-color: #303030;
     --background-tertiary-color: #252525;
     --font-primary-color: #c0bfbc;
+    --outline-color: var(--font-primary-color)
 }
 
 
 html, body, .app {
     height: 100%;
     font-family: cursive;
+    font-size: 1.05em;
     color: var(--font-primary-color);
     background-color: var(--background-primary-color);
 }

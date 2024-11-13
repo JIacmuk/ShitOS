@@ -1,0 +1,16 @@
+@using System.ComponentModel.DataAnnotations
+@using System.Timers
+<div class="options-group">
+    <label for="cpu">Количетсво CPU</label>
+    <input id="cpu" @bind="CpuCount"/>
+    <label for="memory">Память</label>
+    <input id="memory" @bind="Memory"/>
+</div>
+
+
+@code {
+    [Parameter, EditorRequired] 
+    public int CpuCount { get; set; }
+    [Parameter, EditorRequired] 
+    public int Memory { get; set; }
+}

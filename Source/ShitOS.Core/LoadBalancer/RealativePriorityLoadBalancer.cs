@@ -20,7 +20,7 @@ public class RealativePriorityLoadBalancer : IOsLoadBalancer
     
     #pragma warning disable
     /// <inheritdoc/>
-    public IEnumerable<OsTask> Tasks => _tasks.OrderBy(x => x.State);
+    public IEnumerable<OsTask> Tasks => _tasks;
     
     #pragma warning restore
     
@@ -39,8 +39,17 @@ public class RealativePriorityLoadBalancer : IOsLoadBalancer
         
         return totalTics / 10;
     }
-    
-    
+
+    public void RemoveTask(OsTask task)
+    {
+        _tasks.Remove(task);
+        
+        var keyValue = _executableTasks.FirstOrDefault(x => x.Value == task);
+        if  (keyValue.Value != null)
+            _executableTasks.Remove(keyValue.Key);
+    }
+
+
     /// <inheritdoc/>
     public OsTask? SelectTaskOrDefault(int cpuIndex)
     {

@@ -26,4 +26,6 @@ public interface IOsLoadBalancer
     /// </summary>
     /// <returns></returns>
     int GetMaxTicsInRound(int totalTics);
+
+    void RemoveTask(OsTask task);
 }

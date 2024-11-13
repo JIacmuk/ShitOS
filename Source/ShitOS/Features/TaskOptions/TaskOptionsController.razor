@@ -1,0 +1,57 @@
+@using ShitOS.Core.Command
+@using ShitOS.Core.Task
+@using ShitOS.Core.TaskManager
+
+<div class="options-group">
+    <label for="task-priority">Максимальный приоритет</label>
+    <input id="task-priority" type="number" @bind="MaxPriority" @bind:event="oninput" @bind:after="SetPriority"/>
+    <label for="commands-count">Общее количество команд</label>
+    <input id="commands-count" @bind="TotalCount" type="number"/>
+    <label for="io-commands-count">Количество IO команд</label>
+    <input id="io-commands-count" @bind="IoCommandsCount" type="number"/>
+    <button class="rounded_button" @onclick="AddTask">Добавить задачу</button>
+</div>
+
+
+@code
+{
+    [Parameter, EditorRequired]
+    public int MaxPriority { get; set; }
+    
+    [Parameter, EditorRequired]
+    public int TotalCount { get; set; }
+    
+    [Parameter, EditorRequired]
+    public int IoCommandsCount { get; set; }
+    
+    [Parameter, EditorRequired]
+    public OsTaskFactory TaskFactory { get; set; }
+
+    [Parameter, EditorRequired] 
+    public Action<OsTask> OnAddTask { get; set; }
+
+    void AddTask()
+    {
+        OsTask task;
+        int ioCount = IoCommandsCount;
+        int totalCount = TotalCount;
+
+        if (totalCount < 0)
+        {
+            totalCount = Random.Shared.Next(1000);
+        }
+
+        if (ioCount < 0)
+        {
+            ioCount = Random.Shared.Next(totalCount);
+        }
+
+        task = TaskFactory.CreateTask(totalCount, ioCount);
+        OnAddTask(task);
+    }
+
+    void SetPriority()
+    {
+        TaskFactory.Options = new OsTaskFactoryOptions(MaxPriority, TaskFactory.Options.CommandsFactory);
+    }
+}
