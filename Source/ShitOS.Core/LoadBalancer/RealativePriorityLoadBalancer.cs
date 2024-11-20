@@ -34,10 +34,7 @@ public class RealativePriorityLoadBalancer : IOsLoadBalancer
     /// <inheritdoc/>
     public int GetMaxTicsInRound(int totalTics)
     {
-        if (totalTics < 10)
-            return totalTics;
-        
-        return totalTics / 10;
+        return 10;
     }
 
     public void RemoveTask(OsTask task)
