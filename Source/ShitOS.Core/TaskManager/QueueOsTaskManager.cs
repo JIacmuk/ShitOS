@@ -113,6 +113,5 @@ public class QueueOsTaskManager : IOsTaskManager {
             SystemState.Multi += multiTics;
             i -= tics;
         }
-
     }
 }

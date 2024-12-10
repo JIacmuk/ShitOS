@@ -15,14 +15,10 @@
 
 @code
 {
-    [Parameter, EditorRequired]
-    public int MaxPriority { get; set; }
-    
-    [Parameter, EditorRequired]
-    public int TotalCount { get; set; }
-    
-    [Parameter, EditorRequired]
-    public int IoCommandsCount { get; set; }
+
+    public int MaxPriority { get; set; } = 1000;
+    public int TotalCount { get; set; } = -1;
+    public int IoCommandsCount { get; set; } = -1;
     
     [Parameter, EditorRequired]
     public OsTaskFactory TaskFactory { get; set; }
@@ -32,6 +28,7 @@
 
     void AddTask()
     {
+        
         OsTask task;
         int ioCount = IoCommandsCount;
         int totalCount = TotalCount;

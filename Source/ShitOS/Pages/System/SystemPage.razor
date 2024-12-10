@@ -12,7 +12,7 @@
 @using ShitOS.Features.TaskManagerOptions
 @using ShitOS.Features.SystemState
 
-@page "/os"
+@page "/"
 
 <WidthWrapper>
     <div class="row">
@@ -23,9 +23,6 @@
             <button class="rounded_button" @onclick="Run">Запустить</button>
             <TaskOptionsController
                 TaskFactory="TaskFactory"
-                TotalCount="-1"
-                IoCommandsCount="-1"
-                MaxPriority="1000"
                 OnAddTask="AddTask"/>
 
             <AccumulatorOptionsView
@@ -79,10 +76,10 @@
         
         OsTaskManagerOptions taskManagerOptions = new(
             10_000,
-            3
+            1
         );
 
-        IOsLoadBalancer loadBalancer = new RealativePriorityLoadBalancer();
+        IOsLoadBalancer loadBalancer = new FIFOWithoutPriorityLoadBalancer();
         QueueOsTaskManager taskManager = new(taskManagerOptions, loadBalancer);
         
         OsProcessorOptions processorOptions = new(

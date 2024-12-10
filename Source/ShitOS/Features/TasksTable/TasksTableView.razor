@@ -16,7 +16,7 @@
     </thead>
 
     <tbody>
-        @foreach (OsTask task in Tasks.OrderBy(x => -x.Priority))
+        @foreach (OsTask task in Tasks)
         {
             <tr>
                 <td>@task.Id</td>
