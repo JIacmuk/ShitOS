@@ -19,14 +19,13 @@
         <div class="options">
             <SystemStateView
                 State="TaskManager.SystemState"/>
-            
             <button class="rounded_button" @onclick="Run">Запустить</button>
             <TaskOptionsController
                 TaskFactory="TaskFactory"
                 OnAddTask="AddTask"/>
 
             <AccumulatorOptionsView
-                Options="AccumulatorOptions"/>
+                Options="TimerOptions"/>
 
             <TaskManagerOptionsView
                 CpuCount="TaskManager.Options.CpuCount"
@@ -50,55 +49,22 @@
 
 @code
 {
-    private OsCommandsFactory _commandsFactory;
-    private OsTaskFactory _taskFactory;
-    private OsAccumulator _accumulator;
-    private PeriodicTimer _timer;
+    private PeriodicTimer _timer = new(TimeSpan.FromMilliseconds(100));
 
-    public AccumulatorOptions AccumulatorOptions { get; set; }
+    [Inject]
+    public required OsAccumulator Accumulator { get; set; }
+    [Inject] 
+    public required OsTaskFactory TaskFactory { get; set; }
+    [Inject] 
+    public required IOsTaskManager TaskManager { get; set; }
+    [Inject] 
+    public required TimerOptions TimerOptions { get; set; }
+    [Inject] 
+    public required OsCommandsFactory CommandsFactory { get; set; }
 
-    public SystemPage()
-    {
-        AccumulatorOptions = new AccumulatorOptions()
-        {
-            Fps = 10,
-            TicsPerSecond = 2
-        };
-        
-        _timer = new(TimeSpan.FromMilliseconds(100));
-        
-        _commandsFactory = new OsCommandsFactory();
-        _commandsFactory.ExceutableOptions = OsCommandOptions.Executable;
-        _commandsFactory.IOOptions = OsCommandOptions.IO;
-        
-        OsTaskFactoryOptions taskFactoryOptions = new OsTaskFactoryOptions(1000, _commandsFactory);
-        _taskFactory = new OsTaskFactory(taskFactoryOptions);
-        
-        OsTaskManagerOptions taskManagerOptions = new(
-            10_000,
-            1
-        );
-
-        IOsLoadBalancer loadBalancer = new FIFOWithoutPriorityLoadBalancer();
-        QueueOsTaskManager taskManager = new(taskManagerOptions, loadBalancer);
-        
-        OsProcessorOptions processorOptions = new(
-            taskManager,
-            AccumulatorOptions.TicsPerSecond
-        );
-        
-        _accumulator = new OsAccumulator(
-            processorOptions
-        );
-    }
-
-    public OsCommandsFactory CommandsFactory => _commandsFactory;
-    public OsTaskFactory TaskFactory => _taskFactory;
-    public IOsTaskManager TaskManager => _accumulator.TaskManager;
-    
     void AddTask(OsTask task)
     {
-        _accumulator.TaskManager.AddTask(task);
+        Accumulator.TaskManager.AddTask(task);
         StateHasChanged();
     }
 
@@ -106,10 +72,10 @@
     {
         while (true)
         {
-            _accumulator.Process();
+            Accumulator.Process();
             StateHasChanged();
-            _timer.Period = TimeSpan.FromSeconds(1.0d / AccumulatorOptions.Fps);
-            _accumulator.Options.TicsPerSecond = AccumulatorOptions.TicsPerSecond;
+            _timer.Period = TimeSpan.FromSeconds(1.0d / TimerOptions.Fps);
+            Accumulator.Options.TicsPerSecond = TimerOptions.TicsPerSecond;
             await _timer.WaitForNextTickAsync();
         }
     }
